@@ -53,6 +53,7 @@ def get_opening_dialog_data():
         fields=["*"],
         limit_page_length=0,
         order_by="parent",
+        ignore_permissions=True
     )
 
     return data
@@ -355,9 +356,15 @@ def update_invoice(data):
     frappe.flags.ignore_account_permission = True
 
     if invoice_doc.is_return and invoice_doc.return_against:
-        ref_doc = frappe.get_doc(invoice_doc.doctype, invoice_doc.return_against)
+        ref_doc = frappe.get_cached_doc(invoice_doc.doctype, invoice_doc.return_against)
         if not ref_doc.update_stock:
             invoice_doc.update_stock = 0
+        if len(invoice_doc.payments) == 0:
+            invoice_doc.payments = ref_doc.payments
+        invoice_doc.paid_amount = invoice_doc.rounded_total or invoice_doc.grand_total or invoice_doc.total
+        for payment in invoice_doc.payments:
+            if payment.default:
+                payment.amount = invoice_doc.paid_amount
     allow_zero_rated_items = frappe.get_cached_value(
         "POS Profile", invoice_doc.pos_profile, "posa_allow_zero_rated_items"
     )
@@ -678,6 +685,7 @@ def get_available_credit(customer, company):
             "party_type": "Customer",
             "party": customer,
             "company": company,
+            "docstatus": 1,
         },
         ["name", "unallocated_amount"],
     )
@@ -854,9 +862,13 @@ def create_customer(
         )
         if customer_group:
             customer.customer_group = customer_group
+        else:
+            customer.customer_group = "All Customer Groups"
         if territory:
             customer.territory = territory
-        customer.save(ignore_permissions=True)
+        else:
+            customer.territory = "All Territories"
+        customer.save()
         return customer
 
 

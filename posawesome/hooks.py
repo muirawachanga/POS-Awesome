@@ -19,8 +19,7 @@ app_license = "GPLv3"
 # app_include_js = "/assets/posawesome/js/posawesome.js"
 app_include_js = [
     "/assets/posawesome/node_modules/vuetify/dist/vuetify.js",
-    "/assets/js/toConsole.min.js",
-    "/assets/js/posapp.min.js",
+    "posawesome.bundle.js",
 ]
 
 # include js, css files in header of web template
@@ -233,6 +232,8 @@ fixtures = [
                     "Sales Invoice-posa_delivery_charges_rate",
                     "POS Profile-posa_auto_set_delivery_charges",
                     "POS Profile-posa_use_delivery_charges",
+                    "POS Profile-hide_expected_amount",
+                    "POS Profile-posa_allow_change_posting_date",
                 ),
             ]
         ],
